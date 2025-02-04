@@ -396,3 +396,72 @@ Ta thấy luôn IP `192.168.209.20` đã abuse rất nhiều lần, từ đó c�
 Đáp án đúng cho câu 4 là: `2025-01-19 07`
 
 Và đó là phần Forensics.
+
+# Reversing
+# BayThatCao (484 points/3 solves)
+
+**Flag:** `TASCTF{bitcoin_se_giup_chung_ta_giau_len}`
+
+**Attachment:** [here](https://ctf.tlualgosec.com/files/c1c11821c18c515ab64aa86e5fa5e1a2/rev_BayThatCao?token=eyJ1c2VyX2lkIjoxMDU5LCJ0ZWFtX2lkIjpudWxsLCJmaWxlX2lkIjo4OH0.Z6FnQg.zx0tqJUMhIKQGfjo4Xa6S6Sz_E8)
+
+**Description:** Ít ai biết được rằng, **Satoshi Nakamoto** là một thành viên kỳ cựu của TAS.
+
+Khi chạy bài này với `ltrace` và thử một vài string khác nhau, và cũng như đã thử mở lên bằng Ghidra nhưng mà có vẻ mọi thứ không khả thi lắm.
+
+Sau một hồi chạy quanh với đống mã giả export ra được từ Ghidra, tôi nhìn lại vào đề bài và thấy cái tên **Satoshi Nakamoto** được nhắc tới (nhập vào vẫn sai :D) nên đã search thử trên Google về cái tên này.
+
+![alt text](images/rev_baythatcao1.png)
+
+Keyword: `bitcoin`.
+
+Mở ELF lên nhập lại 1 lần nữa:
+
+![alt text](images/rev_baythatcao2.png)
+
+Ta thu ngay được flag.
+
+# DigitalDragon (484 points/3 solves)
+
+**Flag:** `TASCTF{I_first_learned_about_RC4_at_the_DigitalDragonCTF}`
+
+**Attachment:** [here](https://ctf.tlualgosec.com/files/953028c516e5a05f856e1550775a4cab/rev_DigitalDragon?token=eyJ1c2VyX2lkIjoxMDU5LCJ0ZWFtX2lkIjpudWxsLCJmaWxlX2lkIjo4OX0.Z6FpXA._W1iAtF3-wynPfQRa7oohjqdN_g)
+
+**Description:** giải Digital Dragon có lẽ là giải ctf nhiều drama nhất tôi từng chơi ^^
+
+Đầu tiên khi `strings` binary này ra, ta thấy được 2 strings rất khả nghi:
+
+```
+43AE0092D7D98EA042A86C0F382A23F1CD0AE03392260EB683F062E4F910CBFD3CD64AFE6A60550A06014277F28B3D63B94380C91413390381
+```
+
+và
+```
+TASCTF
+```
+
+Nhìn vào đây thì trông có vẻ là bài cho chúng ta 1 hash và 1 key để decrypt. Tuy nhiên thì chúng ta lại không biết đây là dạng encryption gì.
+
+https://emn178.github.io/online-tools/rc4/decrypt/
+
+Tôi đã thực sự sử dụng cái này và thử từng loại decryption (cần key) đến khi thử đến RC4 thì decrypt được ra flag :D
+
+# OSINT
+# Osint 1 (100 points/13 solves)
+
+**Flag:** `TASCTF{43.571_39.728}`
+
+**Given URL:** https://www.youtube.com/watch?v=zfGv4jxL-8I
+
+**Description:** Chào @player. Mục tiêu của nhiệm vụ lần này là Bear, một thành viên của tổ chức The AntheSis. Gã này rất cẩn thận, kín tiếng. Tuy nhiên, lần này hắn đã vô tình để lộ địa điểm giao dịch tiếp theo. Hãy giúp chúng tôi bắt hắn, và cứu Tohka. Chúc may mắn!!!!
+
+Phần trong ngoặc là tọa độ làm tròn đến 3 chữ số thập phân. Ví dụ: Địa điểm có tọa độ 12.456789, 13.456789 sẽ có flag là TASCTF{12.456_13.456}
+
+Đề bài cho ta 1 video và yêu cầu chúng ta tìm kiếm toạ độ chính xác.
+
+Xem đến giây [0:04](https://youtu.be/zfGv4jxL-8I?si=d0AL9Fa-CxKcfIqW&t=4) thì ta có thể đưa vào Google Image Search, sau đó lướt qua tìm kiếm sẽ thấy 1 link Yandex có ảnh y hệt như video:
+
+https://yandex.com/maps/org/polaroid/196448119042/?ll=39.728984%2C43.571030&rl=39.728868%2C43.571064&rlt=area&z=21
+
+![alt text](images/osint_1.png)
+
+Nhìn yêu cầu của flag, ta có thể suy ra được ngay.
