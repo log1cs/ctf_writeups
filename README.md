@@ -176,3 +176,120 @@ Decode bằng base64 với `QmxpdHp7aDFkZDNuXzFuXzdoM19kMzNwX3hEfQ`:
 ```
 Blitz{h1dd3n_1n_7h3_d33p_xD}
 ```
+
+# IOT
+# IOT Sucks (493 pts/10 solves)
+### Description
+I regret learning about IOT - should have studied about some communication methods instead..... Wait a minute why don't I do both manually!? 
+
+### Attachment
+Tải attachment cho IoT sucks tại [đây](https://github.com/log1cs/writeups/tree/blitz-ctf-2025/attachments/chamber_of_secrets).
+
+### Solve
+Ban đầu, tất cả những gì chúng ta có chỉ là 1 file video. Trong đó có chiếc Arduino Uno, và cái LED đỏ blinking trong suốt cả cái video đó.
+
+Điều này có thể khiến chúng ta liên tưởng đến morse code.
+
+Sau đó, cuối cùng [source code](https://raw.githubusercontent.com/log1cs/writeups/refs/heads/blitz-ctf-2025/attachments/iot_sucks/src.ino) cũng được release, giúp cho việc giải thuận tiện hơn rất nhiều (vì làm gì có ai biết morse blinking sequence như thế nào đâu :trollface:)
+
+Chúng ta sẽ tìm hiểu rõ hơn về source code. Để ý kĩ hàm `void loop()` với các case kí tự. Ví dụ với kí tự `a`, thì các chu kì LED sẽ hiển thị như sau:
+
+```
+    case 'a':				//.-
+     
+    digitalWrite(x,HIGH);  // digitalWrite(amount, HIGH) = bật đèn LED lên
+    delay(500);            // delay 500 ms (LED vẫn mở)
+    digitalWrite(x,LOW);   // digitalWrite(amount, LOW) = Tắt đền LED đi
+    delay(400);            // Đèn LED được tắt trong 400 ms
+```
+
+Tương tự với các hàm còn lại. Sau cùng thì challenge này cũng chỉ loanh quanh LED blinking và đối chiếu kí tự.
+
+Bài này sẽ có 2 hướng giải, một là kiểu chày cối (ngồi nhìn video và đối chiếu :trollface:) và 2 là kiểu lấy plot chu kì và đối chiếu kí tự. 
+
+Intended solve sẽ là cách 2, nhưng ở đây mình bày ra 2 cách luôn cho những ai thích chày cối level max :trollface:
+
+Mở video lên, đối chiếu kí tự và làm 1 cái bảng blinking sequences:
+
+Ở đây mình cứ mặc định `delay(500)` + `delay(400)` là nhanh - và `delay(700)` + `delay(900)` là chậm.
+
+| Ký tự  | Sequence                         | Tổng số LED đã blink | Timestamps     |
+| ------ | -------------------------------- | -------------------- | -------------- |
+| **m**  | 2 chậm                           | 2                    | 00:07–00:09    |
+| **0**  | 5 chậm                           | 7                    | 00:10–00:18    |
+| **r**  | 3 nhanh, chậm, nhanh             | 10                   | 00:19–00:21    |
+| **s**  | 3 nhanh                          | 13                   | 00:22–00:25    |
+| **3**  | 3 nhanh, 2 chậm                  | 18                   | 00:26–00:32    |
+| **i**  | 2 nhanh                          | 20                   | 00:33–00:35    |
+| **0**  | 5 chậm                           | 25                   | 00:36–00:43.50 |
+| **t**  | 1 nhanh                          | 26                   | 00:44–00:45    |
+| **\_** | 2 nhanh, 2 chậm, 1 nhanh, 1 chậm | 32                   | 00:46–00:53    |
+| **1**  | 1 nhanh, 1 chậm                  | 34                   | 00:54–00:56    |
+| **5**  | 5 nhanh + delay 500ms            | 39                   | 00:57–01:04    |
+| **\_** | 2 nhanh, 2 chậm, 1 nhanh, 1 chậm | 45                   | 01:05–01:09    |
+| **b**  | 1 chậm, 3 nhanh                  | 49                   | 01:10–N/A      |
+| **4**  | 4 nhanh, 1 chậm                  | 54                   | N/A            |
+| **d**  | 1 chậm, 2 nhanh                  | 57                   | N/A            |
+
+Thực ra ban đầu flag của mình là `Blitz{m0rs3i0t_4r3_b4d}` nhưng trong Discord họ đã thông báo trên announcement là nếu ai ra được chữ `a` trong flag thì nó thực ra là `1`, số còn lại thì không ảnh hưởng.
+
+![announcement](https://raw.githubusercontent.com/log1cs/writeups/blitz-ctf-2025/images/announcement.png)
+
+Ghép lại các thông tin trên thì mọi người sẽ có [flag](https://github.com/log1cs/writeups/tree/blitz-ctf-2025?tab=readme-ov-file#flag-3).
+
+Đương nhiên thì cách vừa rồi chỉ là troll thôi, nhưng thực sự thì mình đã làm thế trong suốt quá trình giải challenge này :trollface:. Tuy nhiên - như đã nói, nếu có plot thì mọi thứ sẽ trở nên dễ dàng hơn rất nhiều.
+
+Nên mình đã dùng script này để generate plot ra:
+
+```
+# prompt: Plot "items" variable, it's in the format of [timestamp, value]. Make the graph fit screen width. Mark the timestamp at very 0.1 seconds
+
+import matplotlib.pyplot as plt
+
+# Extract timestamps and values from the items list
+timestamps = [item[0] for item in items]
+values = [item[1] for item in items]
+
+# Create the plot
+plt.figure(figsize=(50, 5))  # Adjust the figure size as needed
+plt.plot(timestamps, values)
+
+# Set x-axis limits to start from the beginning of the data
+plt.xlim(timestamps[0], timestamps[-1])
+
+# Set the x-axis tick locations at 0.1-second intervals
+# Find the minimum and maximum timestamps to determine the range
+min_ts = timestamps[0]
+max_ts = timestamps[-1]
+
+# Generate tick locations from min_ts to max_ts with a step of 0.1
+tick_locations = [i * 0.1 for i in range(int(min_ts * 10), int(max_ts * 10) + 1)]
+
+plt.xticks(tick_locations)
+
+# Add labels and title
+plt.xlabel('Timestamp (seconds)')
+plt.ylabel('Value')
+plt.title('Value over Time')
+
+# Ensure the plot is displayed within the notebook
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+```
+
+Sử dụng nó với đoạn video, ta có được plot như sau:
+
+![plot](https://raw.githubusercontent.com/log1cs/writeups/blitz-ctf-2025/images/plot.jpg)
+
+Sử dụng code để đối chiếu, ta có thể dễ dàng nhận ra dựa vào các blink sequence của đèn LED:
+
+![plot_modified](https://raw.githubusercontent.com/log1cs/writeups/blitz-ctf-2025/images/plot_modified.png)
+
+Giờ thì flag đã rõ rành rành rồi. Enjoy!
+
+### Flag
+
+```
+Blitz{m0rs3i0t_15_b4d}
+```
